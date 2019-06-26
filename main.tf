@@ -239,6 +239,7 @@ resource "aws_security_group" "wordpress_security_group" {
 
 resource "aws_key_pair" "wordpress_deployer_key" {
   key_name_prefix = "${local.name_prefix}"
+  public_key      = "${var.deployer_public_key}"
 }
 
 resource "aws_elb" "wordpress_elb" {
@@ -269,7 +270,7 @@ resource "aws_launch_template" "wordpress_launch_template" {
   name_prefix          = "${local.name_prefix}"
   image_id             = "${data.aws_ami.latest_ubuntu_1804.id}"
   instance_type        = "${var.wordpress_instance_type}"
-  iam_instance_profile = "${aws_iam_instance_profile.wordpress_server_iam_instance_profile.arn}"
+  iam_instance_profile = ["${aws_iam_instance_profile.wordpress_server_iam_instance_profile.arn}"]
   key_name             = "${aws_key_pair.wordpress_deployer_key.name}"
 
   # TODO: Add automation to mount the EFS target
@@ -289,13 +290,12 @@ resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
   name_prefix = "${local.name_prefix}"
   min_size = "1"
   max_size = "1"
-  launch_template = "${aws_launch_template.wordpress_launch_template.id}"
+  launch_template = ["${aws_launch_template.wordpress_launch_template.id}"]
   load_balancers = ["${aws_elb.wordpress_elb.name}"]
   availability_zones = ["${var.availability_zone_1}", "${var.availability_zone_2}"]
 }
 
 resource "aws_kms_key" "codepipeline_kms_key" {
-  name_prefix = "${local.name_prefix}"
   count = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
   description = "KMS key to encrypt CodePipeline and S3 artifact bucket at rest for ${var.site_tld}"
   deletion_window_in_days = 30
@@ -304,7 +304,7 @@ resource "aws_kms_key" "codepipeline_kms_key" {
 
 resource "aws_kms_alias" "codepipeline_kms_key_name" {
   count = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
-  name = "alias/codepipeline-${local.site_tld_shortname}"
+  name = "alias/codepipeline-${local.name_prefix}"
   target_key_id = "${aws_kms_key.codepipeline_kms_key.key_id}"
 }
 
@@ -410,7 +410,7 @@ POLICY
 
 resource "aws_codebuild_project" "build_project" {
   name_prefix = "${local.name_prefix}"
-  description = "The CodeBuild build project for ${local.site_codecommit_repo_name}"
+  description = "The CodeBuild build project"
   service_role = "${aws_iam_role.codebuild_assume_role.arn}"
   build_timeout = "${var.build_timeout}"
   encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
@@ -434,7 +434,7 @@ resource "aws_codebuild_project" "build_project" {
 
 resource "aws_codebuild_project" "test_project" {
   name_prefix = "${local.name_prefix}"
-  description = "The CodeBuild test project for ${local.site_codecommit_repo_name}"
+  description = "The CodeBuild test project"
   service_role = "${aws_iam_role.codebuild_assume_role.arn}"
   build_timeout = "${var.build_timeout}"
   encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
@@ -486,7 +486,7 @@ resource "aws_codepipeline" "site_codepipeline" {
       output_artifacts = ["${local.site_tld_shortname}-artifacts"]
 
       configuration {
-        RepositoryName = "${local.site_codecommit_repo_name}"
+        RepositoryName = "test"
         BranchName = "master"
       }
     }

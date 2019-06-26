@@ -100,6 +100,10 @@ variable "codepipeline_kms_key_arn" {
   default     = ""
 }
 
+variable "deployer_public_key" {
+  description = "Public key for the deployer key pair. Required."
+}
+
 variable "build_timeout" {
   description = "Build timeout for the build stage (in minutes). Default: 5"
   default     = "5"
