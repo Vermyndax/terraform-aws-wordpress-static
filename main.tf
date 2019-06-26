@@ -237,6 +237,10 @@ resource "aws_security_group" "wordpress_security_group" {
 #   name_prefix = "${local.name_prefix}"
 # }
 
+resource "aws_key_pair" "wordpress_deployer_key" {
+  key_name_prefix = "${local.name_prefix}"
+}
+
 resource "aws_elb" "wordpress_elb" {
   name_prefix                 = "${local.name_prefix}"
   security_groups             = ["${aws_security_group.wordpress_security_group.id}"]
@@ -266,6 +270,8 @@ resource "aws_launch_template" "wordpress_launch_template" {
   image_id             = "${data.aws_ami.latest_ubuntu_1804.id}"
   instance_type        = "${var.wordpress_instance_type}"
   iam_instance_profile = "${aws_iam_instance_profile.wordpress_server_iam_instance_profile.arn}"
+  key_name             = "${aws_key_pair.wordpress_deployer_key.name}"
+
   # TODO: Add automation to mount the EFS target
   # TODO: Add automation to install Wordpress on EFS
   user_data = <<EOF
