@@ -428,7 +428,7 @@ resource "aws_codebuild_project" "build_project" {
 
   source {
     type = "CODEPIPELINE"
-    buildspec = "${var.package_buildspec}"
+    buildspec = "buildspec.yml"
   }
 }
 
@@ -453,7 +453,7 @@ resource "aws_codebuild_project" "test_project" {
   source {
     type = "CODEPIPELINE"
     # TODO: This buildspec should be static instead of using a filename variable
-    buildspec = "${var.test_buildspec}"
+    buildspec = "buildspec-test.yml"
   }
 }
 
