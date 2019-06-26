@@ -262,16 +262,19 @@ resource "aws_elb" "wordpress_elb" {
 }
 
 resource "aws_launch_template" "wordpress_launch_template" {
-  name_prefix   = "${local.name_prefix}"
-  image_id      = "${data.aws_ami.latest_ubuntu_1804.id}"
-  instance_type = "${var.wordpress_instance_type}"
-  # TODO: Add automation to install Wordpress
+  name_prefix          = "${local.name_prefix}"
+  image_id             = "${data.aws_ami.latest_ubuntu_1804.id}"
+  instance_type        = "${var.wordpress_instance_type}"
+  iam_instance_profile = "${aws_iam_instance_profile.wordpress_server_iam_instance_profile.arn}"
+  # TODO: Add automation to mount the EFS target
+  # TODO: Add automation to install Wordpress on EFS
   user_data = <<EOF
 #! /bin/bash
 sudo apt-get update
 sudo apt-get install -y apache2
 sudo systemctl start apache2
 sudo systemctl enable apache2
+sudo apt-get install -y wordpress
 echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html
 EOF
 }
