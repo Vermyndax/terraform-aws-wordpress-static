@@ -10,7 +10,7 @@
 # TODO: Implement tagging module and rolling the tags down
 
 terraform {
-  required_version = ">= 0.12.2" # Looks like some interpolation requires 0.12. Sorry. Heh.
+  required_version = ">= 0.11.14"
 }
 
 locals {
