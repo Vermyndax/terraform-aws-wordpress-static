@@ -60,11 +60,11 @@ variable "wordpress_security_group_ingress_default_all" {
 
 variable "log_include_cookies" {
   description = "Defines whether or not CloudFront should log cookies. Default: false."
-  default     = false
+  default     = "false"
 }
 variable "create_sns_topic" {
   description = "Defines whether or not to create an SNS topic for notifications about events. Default: true."
-  default     = true
+  default     = "true"
 }
 
 variable "sns_topic_name" {
