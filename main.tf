@@ -8,6 +8,13 @@
 # TODO: Add more parameterization to CloudFront
 # TODO: Add lifecycle policies to S3 buckets
 # TODO: Implement tagging module and rolling the tags down
+# TODO: Automate Wordpress
+# TODO: Add RDS
+# TODO: Add EFS and mount targets
+# TODO: Add CloudWatch alarms to scale if health check fails
+# TODO: Respect the ingress rules in variables for security group
+# TODO: This buildspec should be static instead of using a filename variable
+# TODO: No source stage required here on this CodePipeline?
 
 terraform {
   required_version = ">= 0.11.14"
@@ -204,7 +211,7 @@ resource "aws_iam_instance_profile" "wordpress_server_iam_instance_profile" {
 resource "aws_security_group" "wordpress_security_group" {
   name_prefix = "${local.name_prefix}"
   vpc_id      = "${var.vpc_id}"
-  # TODO: Respect the ingress rules in variables
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -286,8 +293,6 @@ resource "aws_launch_template" "wordpress_launch_template" {
     subnet_id             = "${var.subnet_id}"
   }
 
-  # TODO: Add automation to mount the EFS target
-  # TODO: Add automation to install Wordpress on EFS
   user_data = "${base64encode(data.template_file.launch_template_user_data.rendered)}"
 }
 
@@ -454,8 +459,7 @@ resource "aws_codebuild_project" "test_project" {
   }
 
   source {
-    type = "CODEPIPELINE"
-    # TODO: This buildspec should be static instead of using a filename variable
+    type      = "CODEPIPELINE"
     buildspec = "buildspec-test.yml"
   }
 }
@@ -479,7 +483,6 @@ resource "aws_codepipeline" "site_codepipeline" {
   stage {
     name = "Source"
 
-    # TODO: No source stage required here on this one?
     action {
       name             = "Source"
       category         = "Source"
