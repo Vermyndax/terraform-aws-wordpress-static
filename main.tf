@@ -267,11 +267,19 @@ resource "aws_elb" "wordpress_elb" {
 }
 
 resource "aws_launch_template" "wordpress_launch_template" {
-  name_prefix          = "${local.name_prefix}"
-  image_id             = "${data.aws_ami.latest_ubuntu_1804.id}"
-  instance_type        = "${var.wordpress_instance_type}"
-  iam_instance_profile = ["${aws_iam_instance_profile.wordpress_server_iam_instance_profile.arn}"]
-  key_name             = "${aws_key_pair.wordpress_deployer_key.key_name}"
+  name_prefix   = "${local.name_prefix}"
+  image_id      = "${data.aws_ami.latest_ubuntu_1804.id}"
+  instance_type = "${var.wordpress_instance_type}"
+
+  iam_instance_profile {
+    name = "${aws_iam_instance_profile.wordpress_server_iam_instance_profile.name}"
+  }
+
+  key_name = "${aws_key_pair.wordpress_deployer_key.key_name}"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   # TODO: Add automation to mount the EFS target
   # TODO: Add automation to install Wordpress on EFS
@@ -287,11 +295,19 @@ EOF
 }
 
 resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
-  depends_on = ["aws_launch_template.wordpress_launch_template"]
   name_prefix = "${local.name_prefix}"
   min_size = "1"
   max_size = "1"
-  launch_template = ["${aws_launch_template.wordpress_launch_template.id}"]
+
+  launch_template = {
+    id = "${join("", aws_launch_template.wordpress_launch_template.*.id)}"
+    version = "${aws_launch_template.wordpress_launch_template.latest_version}"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
   load_balancers = ["${aws_elb.wordpress_elb.name}"]
   availability_zones = ["${var.availability_zone_1}", "${var.availability_zone_2}"]
 }
