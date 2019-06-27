@@ -409,7 +409,7 @@ POLICY
 }
 
 resource "aws_codebuild_project" "build_project" {
-  name_prefix = "${local.name_prefix}"
+  name = "${local.name_prefix}"
   description = "The CodeBuild build project"
   service_role = "${aws_iam_role.codebuild_assume_role.arn}"
   build_timeout = "${var.build_timeout}"
@@ -433,7 +433,7 @@ resource "aws_codebuild_project" "build_project" {
 }
 
 resource "aws_codebuild_project" "test_project" {
-  name_prefix = "${local.name_prefix}"
+  name = "${local.name_prefix}"
   description = "The CodeBuild test project"
   service_role = "${aws_iam_role.codebuild_assume_role.arn}"
   build_timeout = "${var.build_timeout}"
@@ -460,7 +460,7 @@ resource "aws_codebuild_project" "test_project" {
 # CodePipeline for deployment from CodeCommit to public site
 # Stages are configured in the CodePipeline object below. Add stages and referring CodeBuild projects above as necessary. Note that by default, the test stage is commented out, today.
 resource "aws_codepipeline" "site_codepipeline" {
-  name_prefix = "${local.name_prefix}"
+  name = "${local.name_prefix}"
   role_arn = "${aws_iam_role.codepipeline_iam_role.arn}"
 
   artifact_store {
