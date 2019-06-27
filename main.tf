@@ -278,6 +278,8 @@ resource "aws_launch_template" "wordpress_launch_template" {
     create_before_destroy = true
   }
 
+  vpc_security_group_ids = ["${aws_security_group.wordpress_security_group.id}"]
+
   # TODO: Add automation to mount the EFS target
   # TODO: Add automation to install Wordpress on EFS
   user_data = "${base64encode(data.template_file.launch_template_user_data.rendered)}"
