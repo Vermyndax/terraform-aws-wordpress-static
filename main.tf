@@ -287,6 +287,7 @@ EOF
 }
 
 resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
+  depends_on = ["aws_launch_template.wordpress_launch_template"]
   name_prefix = "${local.name_prefix}"
   min_size = "1"
   max_size = "1"
