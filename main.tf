@@ -36,7 +36,7 @@ data "aws_ami" "latest_ubuntu_1804" {
 
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
-  bucket = "${var.site_tld}"
+  bucket = "${var.site_bucket_name}"
   region = "${var.site_region}"
 
   policy = <<EOF
@@ -50,7 +50,7 @@ resource "aws_s3_bucket" "main_site" {
         "s3:GetObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${var.site_tld}/*",
+      "Resource": "arn:aws:s3:::${var.site_bucket_name}/*",
       "Principal": {
           "AWS":"*"
         },
@@ -77,33 +77,33 @@ EOF
 # S3 bucket for www redirect (optional)
 resource "aws_s3_bucket" "site_www_redirect" {
   count = "${var.create_www_redirect_bucket == "true" ? 1 : 0}"
-  bucket = "www.${var.site_tld}"
+  bucket = "www.${var.site_bucket_name}"
   region = "${var.site_region}"
   acl = "private"
 
   website {
-    redirect_all_requests_to = "${var.site_tld}"
+    redirect_all_requests_to = "${var.site_bucket_name}"
   }
 
   tags = {
-    Website-redirect = "${var.site_tld}"
+    Website-redirect = "${var.site_bucket_name}"
   }
 }
 
 # S3 bucket for website artifacts
 resource "aws_s3_bucket" "site_artifacts" {
-  bucket = "${var.site_tld}-code-artifacts"
+  bucket = "${var.site_bucket_name}-code-artifacts"
   region = "${var.site_region}"
   acl = "private"
 
   tags = {
-    Website-artifacts = "${var.site_tld}"
+    Website-artifacts = "${var.site_bucket_name}"
   }
 }
 
 # S3 bucket for CloudFront logging
 resource "aws_s3_bucket" "site_cloudfront_logs" {
-  bucket = "${var.site_tld}-cloudfront-logs"
+  bucket = "${var.site_bucket_name}-cloudfront-logs"
   region = "${var.site_region}"
   acl = "private"
 }
@@ -297,7 +297,7 @@ resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
 
 resource "aws_kms_key" "codepipeline_kms_key" {
   count = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
-  description = "KMS key to encrypt CodePipeline and S3 artifact bucket at rest for ${var.site_tld}"
+  description = "KMS key to encrypt CodePipeline and S3 artifact bucket at rest for ${var.site_bucket_name}"
   deletion_window_in_days = 30
   enable_key_rotation = "true"
 }
@@ -483,7 +483,7 @@ resource "aws_codepipeline" "site_codepipeline" {
       owner = "AWS"
       provider = "CodeCommit"
       version = "1"
-      output_artifacts = ["${local.site_tld_shortname}-artifacts"]
+      output_artifacts = ["${var.site_bucket_name}-artifacts"]
 
       configuration {
         RepositoryName = "test"
@@ -500,8 +500,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       category = "Test"
       owner = "AWS"
       provider = "CodeBuild"
-      input_artifacts = ["${local.site_tld_shortname}-artifacts"]
-      output_artifacts = ["${local.site_tld_shortname}-tested"]
+      input_artifacts = ["${var.site_bucket_name}-artifacts"]
+      output_artifacts = ["${var.site_bucket_name}-tested"]
       version = "1"
 
       configuration {
@@ -518,8 +518,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       category = "Build"
       owner = "AWS"
       provider = "CodeBuild"
-      input_artifacts = ["${local.site_tld_shortname}-tested"]
-      output_artifacts = ["${local.site_tld_shortname}-build"]
+      input_artifacts = ["${var.site_bucket_name}-tested"]
+      output_artifacts = ["${var.site_bucket_name}-build"]
       version = "1"
 
       configuration {
@@ -533,7 +533,7 @@ resource "aws_codepipeline" "site_codepipeline" {
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
     domain_name = "${aws_s3_bucket.main_site.website_endpoint}"
-    origin_id = "origin-bucket-${var.site_tld}"
+    origin_id = "origin-bucket-${var.site_bucket_name}"
 
     custom_origin_config {
       origin_protocol_policy = "http-only"
@@ -551,19 +551,19 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   logging_config = {
     include_cookies = "${var.log_include_cookies}"
     bucket = "${aws_s3_bucket.site_cloudfront_logs.bucket_domain_name}"
-    prefix = "${local.site_tld_shortname}-"
+    prefix = "${var.site_bucket_name}-"
   }
 
   enabled = true
   default_root_object = "${var.root_page_object}"
-  aliases = ["${var.site_tld}", "www.${var.site_tld}"]
+  aliases = ["${var.site_bucket_name}", "www.${var.site_bucket_name}"]
   price_class = "${var.cloudfront_price_class}"
   retain_on_delete = true
 
   default_cache_behavior {
     allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods = ["GET", "HEAD"]
-    target_origin_id = "origin-bucket-${var.site_tld}"
+    target_origin_id = "origin-bucket-${var.site_bucket_name}"
 
     forwarded_values {
       query_string = true
@@ -598,7 +598,7 @@ resource "aws_sns_topic" "sns_topic" {
   count = "${var.create_sns_topic == "true" ? 1 : 0}"
   name_prefix = "${local.name_prefix}"
 
-  # kms_master_key_id = "alias/codepipeline-${local.site_tld_shortname}"
+  # kms_master_key_id = "alias/codepipeline-${var.site_bucket_name}"
 }
 
 # SNS notifications for pipeline
@@ -662,7 +662,7 @@ data "aws_route53_zone" "site_tld_selected" {
 resource "aws_route53_record" "site_tld_record" {
   count   = "${var.create_public_dns_site_record == "true" ? 1 : 0}"
   zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
-  name    = "${var.site_tld}."
+  name    = "${var.site_bucket_name}."
   type    = "A"
 
   alias {
@@ -679,5 +679,5 @@ resource "aws_route53_record" "site_www_record" {
   type    = "CNAME"
   ttl     = "5"
 
-  records = ["${var.site_tld}"]
+  records = ["${var.site_bucket_name}"]
 }

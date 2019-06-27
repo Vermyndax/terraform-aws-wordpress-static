@@ -73,7 +73,11 @@ variable "sns_topic_name" {
 }
 
 variable "site_tld" {
-  description = "TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com"
+  description = "TLD of the website you want to create. Example: example.com. This will be used for Route53."
+}
+
+variable "site_bucket_name" {
+  description = "Site bucket name - recomended to use the host TLD of the website... example: www.example.com or test.example.com. Required."
 }
 
 variable "create_public_dns_zone" {
