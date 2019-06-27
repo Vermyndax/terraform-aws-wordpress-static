@@ -278,7 +278,13 @@ resource "aws_launch_template" "wordpress_launch_template" {
     create_before_destroy = true
   }
 
-  vpc_security_group_ids = ["${aws_security_group.wordpress_security_group.id}"]
+  # vpc_security_group_ids = ["${aws_security_group.wordpress_security_group.id}"]
+
+  network_interfaces {
+    delete_on_termination = true
+    security_groups       = ["${aws_security_group.wordpress_security_group.id}"]
+    subnet_id             = "${var.subnet_id}"
+  }
 
   # TODO: Add automation to mount the EFS target
   # TODO: Add automation to install Wordpress on EFS
