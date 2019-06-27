@@ -629,10 +629,6 @@ resource "aws_cloudwatch_event_target" "sns" {
   arn       = "${aws_sns_topic.sns_topic.arn}"
 }
 
-resource "aws_sns_topic" "sns_topic" {
-  name_prefix = "${local.name_prefix}"
-}
-
 resource "aws_sns_topic_policy" "default_sns_policy" {
   arn    = "${aws_sns_topic.sns_topic.arn}"
   policy = "${data.aws_iam_policy_document.sns_topic_policy.json}"
