@@ -235,7 +235,7 @@ resource "aws_key_pair" "wordpress_deployer_key" {
 resource "aws_elb" "wordpress_elb" {
   name_prefix                 = "${local.name_prefix}"
   security_groups             = ["${aws_security_group.wordpress_security_group.id}"]
-  availability_zones          = ["${var.availability_zone_1}", "${var.availability_zone_2}"]
+  subnets                     = ["${var.elb_subnets}"]
   cross_zone_load_balancing   = true
   idle_timeout                = 400
   connection_draining         = true
@@ -478,7 +478,7 @@ resource "aws_codepipeline" "site_codepipeline" {
       owner            = "AWS"
       provider         = "CodeCommit"
       version          = "1"
-      output_artifacts = ["${var.site_bucket_name}-artifacts"]
+      output_artifacts = ["${local.name_prefix}-artifacts"]
 
       configuration {
         RepositoryName = "test"
@@ -495,8 +495,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       category         = "Test"
       owner            = "AWS"
       provider         = "CodeBuild"
-      input_artifacts  = ["${var.site_bucket_name}-artifacts"]
-      output_artifacts = ["${var.site_bucket_name}-tested"]
+      input_artifacts  = ["${local.name_prefix}-artifacts"]
+      output_artifacts = ["${local.name_prefix}-tested"]
       version          = "1"
 
       configuration {
@@ -513,8 +513,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
-      input_artifacts  = ["${var.site_bucket_name}-tested"]
-      output_artifacts = ["${var.site_bucket_name}-build"]
+      input_artifacts  = ["${local.name_prefix}-tested"]
+      output_artifacts = ["${local.name_prefix}-build"]
       version          = "1"
 
       configuration {

@@ -67,6 +67,11 @@ variable "create_sns_topic" {
   default     = "true"
 }
 
+variable "elb_subnets" {
+  description = "List of subnet IDs to attach to the ELB. Required."
+  type        = "list"
+}
+
 variable "sns_topic_name" {
   description = "Name for the SNS topic."
   default     = ""
