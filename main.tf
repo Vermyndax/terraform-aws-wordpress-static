@@ -305,8 +305,8 @@ resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
     create_before_destroy = true
   }
 
-  load_balancers     = ["${aws_elb.wordpress_elb.name}"]
-  availability_zones = ["${var.availability_zone_1}", "${var.availability_zone_2}"]
+  load_balancers      = ["${aws_elb.wordpress_elb.name}"]
+  vpc_zone_identifier = ["${var.elb_subnets}"]
 }
 
 # resource "aws_kms_key" "codepipeline_kms_key" {
