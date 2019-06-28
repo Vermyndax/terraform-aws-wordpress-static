@@ -583,7 +583,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   default_root_object = "${var.root_page_object}"
   aliases             = ["${var.site_bucket_name}"]
   price_class         = "${var.cloudfront_price_class}"
-  retain_on_delete    = true
+  retain_on_delete    = false
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
