@@ -23,8 +23,8 @@ echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
 echo "RewriteEngine On" >> /var/www/html/.htaccess
 echo "RewriteBase /" >> /var/www/html/.htaccess
 echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
-echo "RewriteCond $$%{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
-echo "RewriteCond $$%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
+echo "RewriteCond $$$$%{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
+echo "RewriteCond $$$$%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
 echo "RewriteRule . /index.php [L]" >> /var/www/html/.htaccess
 echo "# END WordPress" >> /var/www/html/.htaccess
 chown -R www-data:www-data /var/www/html
