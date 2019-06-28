@@ -223,7 +223,7 @@ resource "aws_security_group" "wordpress_instance_security_group" {
     to_port   = 80
     protocol  = "tcp"
     # cidr_blocks = ["0.0.0.0/0"]
-    security_groups = ["${aws_security_group.wordpress_instance_security_group.id}"]
+    security_groups = ["${aws_security_group.wordpress_elb_security_group.id}"]
   }
 }
 
