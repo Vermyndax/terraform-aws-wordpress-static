@@ -260,7 +260,7 @@ resource "aws_key_pair" "wordpress_deployer_key" {
 
 resource "aws_elb" "wordpress_elb" {
   name_prefix                 = "${local.name_prefix}"
-  security_groups             = ["${aws_security_group.wordpress_security_group.id}"]
+  security_groups             = ["${aws_security_group.wordpress_elb_security_group.id}"]
   subnets                     = ["${var.elb_subnets}"]
   cross_zone_load_balancing   = true
   idle_timeout                = 400
@@ -308,7 +308,7 @@ resource "aws_launch_template" "wordpress_launch_template" {
 
   network_interfaces {
     delete_on_termination = true
-    security_groups       = ["${aws_security_group.wordpress_security_group.id}"]
+    security_groups       = ["${aws_security_group.wordpress_instance_security_group.id}"]
     subnet_id             = "${var.subnet_id}"
   }
 
