@@ -208,7 +208,7 @@ resource "aws_iam_instance_profile" "wordpress_server_iam_instance_profile" {
 #   name_prefix = "${local.name_prefix}"
 # }
 
-resource "aws_security_group" "wordpress_security_group" {
+resource "aws_security_group" "wordpress_instance_security_group" {
   name_prefix = "${local.name_prefix}"
   vpc_id      = "${var.vpc_id}"
 
@@ -219,8 +219,27 @@ resource "aws_security_group" "wordpress_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port = 80
+    to_port   = 80
+    protocol  = "tcp"
+    # cidr_blocks = ["0.0.0.0/0"]
+    security_groups = ["${aws_security_group.wordpress_instance_security_group.id}"]
+  }
+}
+
+resource "aws_security_group" "wordpress_elb_security_group" {
+  name_prefix = "${local.name_prefix}"
+  vpc_id      = "${var.vpc_id}"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
