@@ -18,8 +18,8 @@ mount -a
 tar xzvf /tmp/latest.tar.gz --strip 1 -C /var/www/html
 rm /tmp/latest.tar.gz
 chown -R apache:apache /var/www/html
-sed -i 's/#ServerName www.example.com:80/ServerName www.myblog.com:80/' /etc/apache2/conf/httpd.conf
-sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@myblog.com/' /etc/apache2/conf/httpd.conf
+sed -i 's/#ServerName www.example.com:80/ServerName ${site_edit_name}:80/' /etc/apache2/conf/httpd.conf
+sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}.com/' /etc/apache2/conf/httpd.conf
 #setsebool -P httpd_can_network_connect 1
 #setsebool -P httpd_can_network_connect_db 1
 systemctl enable apache2
