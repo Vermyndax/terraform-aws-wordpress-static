@@ -21,8 +21,7 @@ terraform {
 }
 
 locals {
-  name_prefix    = "${var.name_prefix != "" ? var.name_prefix : var.deployment_name}"
-  site_shortname = "${replace(var.site_bucket_name, ".{var.site_tld}", "")}"
+  name_prefix = "${var.name_prefix != "" ? var.name_prefix : var.deployment_name}"
 }
 
 data "aws_ami" "latest_ubuntu_1804" {
@@ -732,7 +731,7 @@ resource "aws_route53_record" "site_tld_record" {
 resource "aws_route53_record" "site_wordpress_record" {
   count = "${var.create_public_wordpress_record == "true" ? 1 : 0}"
   zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
-  name = "${local.site_shortname}-edit."
+  name = "${var.site_edit_name}."
   type = "A"
 
   alias {

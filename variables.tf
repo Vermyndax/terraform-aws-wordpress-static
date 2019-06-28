@@ -85,6 +85,10 @@ variable "site_bucket_name" {
   description = "Site bucket name - recomended to use the host TLD of the website... example: www.example.com or test.example.com. Required."
 }
 
+variable "site_edit_name" {
+  description = "Site name you want to attach to the DNS record for the edit hostname. Required."
+}
+
 variable "create_public_dns_zone" {
   description = "If set to true, creates a public hosted zone in Route53 for your site. Default: false."
   default     = "false"
