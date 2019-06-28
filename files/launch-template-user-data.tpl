@@ -19,6 +19,7 @@ tar xzvf /tmp/latest.tar.gz --strip 1 -C /var/www/html
 rm /tmp/latest.tar.gz
 echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
 echo "# BEGIN WordPress" > /var/www/html/.htaccess
+echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
 echo "RewriteEngine On" >> /var/www/html/.htaccess
 echo "RewriteBase /" >> /var/www/html/.htaccess
 echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
