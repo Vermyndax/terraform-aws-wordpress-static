@@ -230,6 +230,13 @@ resource "aws_security_group" "wordpress_instance_security_group" {
     protocol        = "tcp"
     security_groups = ["${aws_security_group.wordpress_elb_security_group.id}"]
   }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["110.54.242.12/32"]
+  }
 }
 
 resource "aws_security_group" "wordpress_efs_mount_security_group" {
