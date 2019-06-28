@@ -8,7 +8,7 @@ yum install -y php php-dom php-gd php-mysql nfs-utils
 echo "${efs_dns_name}:/ /var/www/html nfs defaults,vers=4.1 0 0" >> /etc/fstab
 for z in {0..120}; do
     echo -n .
-    host "${aefs_dns_name}" && break
+    host "${efs_dns_name}" && break
     sleep 1
 done
 sudo apt-get install -y apache2
