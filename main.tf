@@ -338,9 +338,10 @@ resource "aws_launch_template" "wordpress_launch_template" {
   # vpc_security_group_ids = ["${aws_security_group.wordpress_security_group.id}"]
 
   network_interfaces {
-    delete_on_termination = true
-    security_groups       = ["${aws_security_group.wordpress_instance_security_group.id}"]
-    subnet_id             = "${var.subnet_id}"
+    delete_on_termination       = true
+    associate_public_ip_address = true
+    security_groups             = ["${aws_security_group.wordpress_instance_security_group.id}"]
+    subnet_id                   = "${var.subnet_id}"
   }
 
   user_data = "${base64encode(data.template_file.launch_template_user_data.rendered)}"
