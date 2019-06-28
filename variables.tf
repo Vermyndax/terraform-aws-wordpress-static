@@ -94,6 +94,16 @@ variable "create_public_dns_zone" {
   default     = "false"
 }
 
+variable "efs_subnet_tag_name" {
+  description = "What tag name should be used to locate the subnets to create EFS mount targets? Default: Type"
+  default     = "Type"
+}
+
+variable "efs_subnet_tag_value" {
+  description = "What tag value should be used to locate the subnets to create EFS mount targets? Default: Public"
+  default     = "Public"
+}
+
 variable "create_public_dns_site_record" {
   description = "If set to true, creates a public DNS record in your site_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create_public_dns_zone to true. Otherwise, this will try to create a record in an existing zone or fail. Default: true."
   default     = "true"

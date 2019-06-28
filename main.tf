@@ -283,10 +283,12 @@ resource "aws_efs_file_system" "wordpress_efs_share" {
 data "aws_subnet_ids" "vpc_public_subnets" {
   vpc_id = "${var.vpc_id}"
 
-  tags = {
-    Type = "Public"
+  filter {
+    name   = "tag:${var.efs_subnet_tag_name}"
+    values = ["${var.efs_subnet_tag_value}"]
   }
 }
+
 resource "aws_efs_mount_target" "wordpress_mount_target" {
   # This should be more dynamic to pick up public subnets, figure out a clever way to do that
   count           = "${length(data.aws_subnet_ids.vpc_public_subnets.ids)}"
