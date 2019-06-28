@@ -318,9 +318,9 @@ resource "aws_elb" "wordpress_elb" {
 
 data "template_file" "launch_template_user_data" {
   template = "${file("${path.module}/files/launch-template-user-data.tpl")}"
-  # vars = {
-  #   consul_address = "${aws_instance.consul.private_ip}"
-  # }
+  vars = {
+    wordpress_efs_share = "${aws_efs_file_system.wordpress_efs_share.dns_name}"
+  }
 }
 
 resource "aws_launch_template" "wordpress_launch_template" {
