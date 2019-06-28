@@ -22,6 +22,8 @@ echo "# BEGIN WordPress" > /var/www/html/.htaccess
 echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
 echo "RewriteEngine On" >> /var/www/html/.htaccess
 echo "RewriteBase /" >> /var/www/html/.htaccess
+echo "RewriteCond %%{HTTPS} !=on" >> /var/www/html/.htaccess
+echo "RewriteRule ^ https://%%{HTTP_HOST}%%{REQUEST_URI} [L,R=301]" >> /var/www/html/.htaccess
 echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
 echo "RewriteCond %%{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
 echo "RewriteCond %%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
