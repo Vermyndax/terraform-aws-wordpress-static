@@ -4,7 +4,7 @@ while ! ip route | grep -oP 'default via .+ dev eth0'; do
   sleep 1;
 done
 sudo apt-get update
-yum install -y php php-dom php-gd php-mysql nfs-common
+apt-get install -y php php-dom php-gd php-mysql nfs-common
 echo "${efs_dns_name}:/ /var/www/html nfs defaults,vers=4.1 0 0" >> /etc/fstab
 for z in {0..120}; do
     echo -n .
@@ -19,7 +19,7 @@ tar xzvf /tmp/latest.tar.gz --strip 1 -C /var/www/html
 rm /tmp/latest.tar.gz
 chown -R apache:apache /var/www/html
 sed -i 's/#ServerName www.example.com:80/ServerName ${site_edit_name}:80/' /etc/apache2/conf/httpd.conf
-sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}.com/' /etc/apache2/conf/httpd.conf
+sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}/' /etc/apache2/conf/httpd.conf
 #setsebool -P httpd_can_network_connect 1
 #setsebool -P httpd_can_network_connect_db 1
 systemctl enable apache2
