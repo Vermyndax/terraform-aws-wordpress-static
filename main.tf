@@ -280,12 +280,18 @@ resource "aws_efs_file_system" "wordpress_efs_share" {
   # Nothing special about an EFS share resource
 }
 
+data "aws_subnet_ids" "vpc_public_subnets" {
+  vpc_id = "${var.vpc_id}"
+
+  tags = {
+    Type = "Public"
+  }
+}
 resource "aws_efs_mount_target" "wordpress_mount_target" {
   # This should be more dynamic to pick up public subnets, figure out a clever way to do that
-  # count = "${length(data.aws_subnet_ids.vpc_public_subnets.ids)}"
-  # subnet_id       = "${element(data.aws_subnet_ids.vpc_public_subnets.ids, count.index)}"
+  count           = "${length(data.aws_subnet_ids.vpc_public_subnets.ids)}"
+  subnet_id       = "${element(data.aws_subnet_ids.vpc_public_subnets.ids, count.index)}"
   file_system_id  = "${aws_efs_file_system.wordpress_efs_share.id}"
-  subnet_id       = "${var.subnet_id}"
   security_groups = ["${aws_security_group.wordpress_efs_mount_security_group.id}"]
 }
 
