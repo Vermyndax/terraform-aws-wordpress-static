@@ -322,7 +322,7 @@ resource "aws_elb" "wordpress_elb" {
     unhealthy_threshold = 2
     timeout             = 3
     interval            = 30
-    target              = "HTTP:80/"
+    target              = "HTTP:80/index.html"
   }
   listener {
     lb_port            = 443

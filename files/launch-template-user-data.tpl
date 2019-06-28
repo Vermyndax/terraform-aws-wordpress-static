@@ -17,7 +17,16 @@ wget https://www.wordpress.org/latest.tar.gz
 mount -a
 tar xzvf /tmp/latest.tar.gz --strip 1 -C /var/www/html
 rm /tmp/latest.tar.gz
-chown -R apache:apache /var/www/html
+echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
+echo "# BEGIN WordPress" > /var/www/html/.htaccess
+echo "RewriteEngine On" >> /var/www/html/.htaccess
+echo "RewriteBase /" >> /var/www/html/.htaccess
+echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
+echo "RewriteCond %{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
+echo "RewriteCond %{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
+echo "RewriteRule . /index.php [L]" >> /var/www/html/.htaccess
+echo "# END WordPress" >> /var/www/html/.htaccess
+chown -R www-data:www-data /var/www/html
 # sed -i 's/#ServerName www.example.com:80/ServerName ${site_edit_name}:80/' /etc/apache2/sites-available/000-default.conf
 sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}/' /etc/apache2/sites-available/000-default.conf
 #setsebool -P httpd_can_network_connect 1
