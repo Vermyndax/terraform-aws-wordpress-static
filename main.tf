@@ -225,6 +225,30 @@ resource "aws_security_group" "wordpress_instance_security_group" {
     # cidr_blocks = ["0.0.0.0/0"]
     security_groups = ["${aws_security_group.wordpress_elb_security_group.id}"]
   }
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = ["${aws_security_group.wordpress_elb_security_group.id}"]
+  }
+}
+
+resource "aws_security_group" "wordpress_efs_mount_security_group" {
+  name_prefix = "${local.name_prefix}"
+  vpc_id      = "${var.vpc_id}"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = ["${aws_security_group.wordpress_instance_security_group.id}"]
+  }
 }
 
 resource "aws_security_group" "wordpress_elb_security_group" {
@@ -243,15 +267,23 @@ resource "aws_security_group" "wordpress_elb_security_group" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-# resource "aws_efs_file_system" "wordpress_efs_share" {
-#   name_prefix = "${local.name_prefix}"
-# }
+resource "aws_efs_file_system" "wordpress_efs_share" {
+  # Nothing special about an EFS share resource
+}
 
-# resource "aws_efs_mount_target" "wordpress_mount_target" {
-#   name_prefix = "${local.name_prefix}"
-# }
+resource "aws_efs_mount_target" "wordpress_mount_target" {
+  file_system_id  = "${aws_efs_file_system.wordpress_efs_share.id}"
+  subnet_id       = "${var.subnet_id}"
+  security_groups = ["${aws_security_group.wordpress_efs_mount_security_group.id}"]
+}
 
 resource "aws_key_pair" "wordpress_deployer_key" {
   key_name_prefix = "${local.name_prefix}"
@@ -693,6 +725,19 @@ resource "aws_route53_record" "site_tld_record" {
   alias {
     name = "${aws_cloudfront_distribution.site_cloudfront_distribution.domain_name}"
     zone_id = "${aws_cloudfront_distribution.site_cloudfront_distribution.hosted_zone_id}"
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "site_wordpress_record" {
+  count = "${var.create_public_wordpress_record == "true" ? 1 : 0}"
+  zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
+  name = "${var.site_bucket_name}-edit."
+  type = "A"
+
+  alias {
+    name = "${aws_elb.wordpress_elb.dns_name}"
+    zone_id = "${aws_elb.wordpress_elb.zone_id}"
     evaluate_target_health = false
   }
 }

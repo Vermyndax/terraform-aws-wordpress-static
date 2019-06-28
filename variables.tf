@@ -95,6 +95,11 @@ variable "create_public_dns_site_record" {
   default     = "true"
 }
 
+variable "create_public_wordpress_record" {
+  description = "If set to true, will create a record called *-edit. This is the endpoint for users to access Wordpress to edit articles."
+  default     = "true"
+}
+
 variable "create_public_dns_www_record" {
   description = "Defines whether or not to create a WWW DNS record for the site. Default: false."
   default     = false
