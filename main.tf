@@ -266,6 +266,8 @@ resource "aws_security_group" "wordpress_elb_security_group" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  # TODO: Remove this when debugging is finished
   ingress {
     from_port   = 22
     to_port     = 22
@@ -313,6 +315,14 @@ resource "aws_elb" "wordpress_elb" {
     instance_port      = "80"
     instance_protocol  = "http"
     ssl_certificate_id = "${var.acm_site_certificate_arn}"
+  }
+
+  # TODO: Remove this listener when debugging is finished
+  listener {
+    lb_port           = 22
+    lb_protocol       = "tcp"
+    instance_port     = 22
+    instance_protocol = "tcp"
   }
 }
 
