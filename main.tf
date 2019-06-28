@@ -319,7 +319,7 @@ resource "aws_elb" "wordpress_elb" {
 data "template_file" "launch_template_user_data" {
   template = "${file("${path.module}/files/launch-template-user-data.tpl")}"
   vars = {
-    wordpress_efs_share = "${aws_efs_file_system.wordpress_efs_share.dns_name}"
+    efs_dns_name = "${aws_efs_file_system.wordpress_efs_share.dns_name}"
   }
 }
 
