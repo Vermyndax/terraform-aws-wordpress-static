@@ -344,6 +344,14 @@ resource "aws_launch_template" "wordpress_launch_template" {
     subnet_id                   = "${var.subnet_id}"
   }
 
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = "Wordpress Edit Server"
+    }
+  }
+
   user_data = "${base64encode(data.template_file.launch_template_user_data.rendered)}"
 }
 
