@@ -653,6 +653,7 @@ resource "aws_db_instance" "wordpress_rds" {
     db_subnet_group_name   = "${var.wordpress_database_subnet_group_name}"
     parameter_group_name   = "default.mysql5.7"
     skip_final_snapshot    = true
+    publicly_accessible    = true
     tags {
         Name = "WordPress DB for ${local.name_prefix}"
     }
