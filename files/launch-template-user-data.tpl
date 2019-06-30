@@ -19,15 +19,17 @@ tar xzvf /tmp/latest.tar.gz --strip 1 -C /var/www/html
 rm /tmp/latest.tar.gz
 echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
 echo "# BEGIN WordPress" > /var/www/html/.htaccess
+echo "<IfModule mod_rewrite.c>" >> /var/www/html/.htaccess
 echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
 echo "RewriteEngine On" >> /var/www/html/.htaccess
 echo "RewriteBase /" >> /var/www/html/.htaccess
-echo "RewriteCond %%{HTTPS} !=on" >> /var/www/html/.htaccess
+echo "RewriteCond %%{HTTPS} off" >> /var/www/html/.htaccess
 echo "RewriteRule ^ https://%%{HTTP_HOST}%%{REQUEST_URI} [L,R=301]" >> /var/www/html/.htaccess
 echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
 echo "RewriteCond %%{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
 echo "RewriteCond %%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
 echo "RewriteRule . /index.php [L]" >> /var/www/html/.htaccess
+echo "</IfModule>" >> /var/www/html/.htaccess
 echo "# END WordPress" >> /var/www/html/.htaccess
 chown -R www-data:www-data /var/www/html
 # sed -i 's/#ServerName www.example.com:80/ServerName ${site_edit_name}:80/' /etc/apache2/sites-available/000-default.conf
