@@ -4,7 +4,7 @@ while ! ip route | grep -oP 'default via .+ dev eth0'; do
   sleep 1;
 done
 sudo apt-get update
-sudo apt-get install -y php php-dom php-gd php-mysql nfs-common
+sudo apt-get install -y php php-dom php-gd php-mysql php-curl nfs-common
 echo "${efs_dns_name}:/ /var/www/html nfs defaults,vers=4.1 0 0" >> /etc/fstab
 for z in {0..120}; do
     echo -n .
