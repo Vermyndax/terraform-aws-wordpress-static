@@ -6,11 +6,9 @@
 # TODO: Encrypt the EFS share
 # TODO: Add method/code to manually trigger build (API gateway?)
 # TODO: Add more parameterization to CloudFront
-# TODO: Add lifecycle policies to S3 buckets
 # TODO: Implement tagging module and rolling the tags down
 # TODO: Automate Wordpress
 # TODO: Add RDS
-# TODO: Add EFS and mount targets
 # TODO: Add CloudWatch alarms to scale if health check fails
 # TODO: Respect the ingress rules in variables for security group
 # TODO: This buildspec should be static instead of using a filename variable
@@ -621,6 +619,23 @@ resource "aws_codepipeline" "site_codepipeline" {
       }
     }
   }
+}
+
+resource "aws_db_instance" "wordpress_rds" {
+    identifier             = "${local.name_prefix}"
+    engine                 = "mysql"
+    engine_version         = "5.7"
+    allocated_storage      = "10"
+    instance_class         = "db.t2.micro"
+    vpc_security_group_ids = ["${aws_security_group.sgWordPress.id}"]
+    name                   = "${var.wordpress_database_name}"
+    username               = "${var.wordpress_database_username}"
+    password               = "${var.wordpress_database_password}"
+    parameter_group_name   = "default.mysql5.7"
+    skip_final_snapshot    = true
+    tags {
+        Name = "WordPress DB for ${local.name_prefix}"
+    }
 }
 
 # CloudFront distribution

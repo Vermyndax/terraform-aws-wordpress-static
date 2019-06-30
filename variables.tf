@@ -10,6 +10,24 @@ variable "name_prefix" {
   default     = ""
 }
 
+variable "wordpress_database_name" {
+  description = "Name of the Wordpress database you want. Default: wordpress."
+  default     = "wordpress"
+}
+
+variable "wordpress_database_username" {
+  description = "User name of the Wordpress database. Required."
+}
+
+variable "wordpress_database_password" {
+  description = "Password for the Wordpress database. Required."
+}
+
+variable "wordpress_database_prefix" {
+  description = "Prefix for the Wordpress database tables. Default: wp_"
+  default     = "wp_"
+}
+
 variable "deployment_name" {
   description = "Deployment name that will be used instead of name_prefix. If this is set (default: wordpress-static) then it will be prefixed on all resource names. We suggest you at least add the name of the project or customer here."
   default     = "wordpress-static"
