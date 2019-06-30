@@ -23,6 +23,10 @@ variable "wordpress_database_password" {
   description = "Password for the Wordpress database. Required."
 }
 
+variable "wordpress_database_subnet_group_name" {
+  description = "Database subnet group name to use. Required."
+}
+
 variable "wordpress_database_storage" {
   description = "Allocated storage for the RDS database, in gigabytes. Default: 10."
   default     = "10"

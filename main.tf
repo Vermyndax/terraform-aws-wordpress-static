@@ -650,6 +650,7 @@ resource "aws_db_instance" "wordpress_rds" {
     name                   = "${var.wordpress_database_name}"
     username               = "${var.wordpress_database_username}"
     password               = "${var.wordpress_database_password}"
+    db_subnet_group_name   = "${var.wordpress_database_subnet_group_name}"
     parameter_group_name   = "default.mysql5.7"
     skip_final_snapshot    = true
     tags {
