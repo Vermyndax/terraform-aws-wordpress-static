@@ -621,13 +621,32 @@ resource "aws_codepipeline" "site_codepipeline" {
   }
 }
 
+resource "aws_security_group" "wordpress_database_security_group" {
+    name_prefix = "${local.name_prefix}"
+  vpc_id        = "${var.vpc_id}"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 3306
+    to_port   = 3306
+    protocol  = "tcp"
+    # cidr_blocks = ["0.0.0.0/0"]
+    security_groups = ["${aws_security_group.wordpress_instance_security_group.id}"]
+  }
+}
+
 resource "aws_db_instance" "wordpress_rds" {
     identifier             = "${local.name_prefix}"
     engine                 = "mysql"
     engine_version         = "5.7"
-    allocated_storage      = "10"
-    instance_class         = "db.t2.micro"
-    vpc_security_group_ids = ["${aws_security_group.sgWordPress.id}"]
+    allocated_storage      = "${var.wordpress_database_storage}"
+    instance_class         = "${var.wordpress_database_instance_type}"
+    vpc_security_group_ids = ["${aws_security_group.wordpress_database_security_group.id}"]
     name                   = "${var.wordpress_database_name}"
     username               = "${var.wordpress_database_username}"
     password               = "${var.wordpress_database_password}"

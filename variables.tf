@@ -23,6 +23,15 @@ variable "wordpress_database_password" {
   description = "Password for the Wordpress database. Required."
 }
 
+variable "wordpress_database_storage" {
+  description = "Allocated storage for the RDS database, in gigabytes. Default: 10."
+  default     = "10"
+}
+
+variable "wordpress_database_instance_type" {
+  description = "RDS instance type. Default: db.t2.micro"
+  default     = "db.t2.micro"
+}
 variable "wordpress_database_prefix" {
   description = "Prefix for the Wordpress database tables. Default: wp_"
   default     = "wp_"
