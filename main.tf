@@ -14,10 +14,6 @@
 # TODO: This buildspec should be static instead of using a filename variable
 # TODO: No source stage required here on this CodePipeline?
 
-terraform {
-  required_version = ">= 0.11.14"
-}
-
 locals {
   name_prefix = "${var.name_prefix != "" ? var.name_prefix : var.deployment_name}"
 }
