@@ -22,25 +22,29 @@ chmod +x wp-cli.phar
 sudo mv wp-cli.phar /usr/local/bin/wp
 cd /var/www/html
 sudo wp core download --allow-root
-# echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
+echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
 echo "# BEGIN WordPress" > /var/www/html/.htaccess
 echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
 echo "<IfModule mod_rewrite.c>" >> /var/www/html/.htaccess
 echo "RewriteEngine On" >> /var/www/html/.htaccess
 echo "RewriteBase /" >> /var/www/html/.htaccess
-echo "RewriteCond %%{HTTPS} off" >> /var/www/html/.htaccess
-echo "RewriteRule ^ https://%%{HTTP_HOST}%%{REQUEST_URI} [L,R=301]" >> /var/www/html/.htaccess
 echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
 echo "RewriteCond %%{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
 echo "RewriteCond %%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
 echo "RewriteRule . /index.php [L]" >> /var/www/html/.htaccess
 echo "</IfModule>" >> /var/www/html/.htaccess
 echo "# END WordPress" >> /var/www/html/.htaccess
+echo "<Directory /var/www/html/>" >> /etc/apache2/apache2.conf
+echo "        Options Indexes FollowSymLinks" >> /etc/apache2/apache2.conf
+echo "        AllowOverride all" >> /etc/apache2/apache2.conf
+echo "        Require all granted" >> /etc/apache2/apache2.conf
+echo "</Directory>" >> /etc/apache2/apache2.conf
 sudo wp core config --allow-root --dbname='${database_name}' --dbuser='${database_username}' --dbpass='${database_password}' --dbhost='${database_instance}' --dbprefix='${database_prefix}'
 sudo wp core install --allow-root --url='https://${site_hostname}' --title='${blog_title}' --admin_user='${admin_user}' --admin_password='${admin_password}' --admin_email='${admin_email}'
-TEXT="if (strpos($_SERVER[\'HTTP_X_FORWARDED_PROTO\'], \'https\') !== false)\n\   $_SERVER[\'HTTPS\']=\'on\';"
+TEXT="if (strpos($$_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false)\n   $$_SERVER['HTTPS']='on';"
 sed -i "/^\$table_prefix =.*/a $TEXT" /var/www/html/wp-config.php
-sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}/' /etc/apache2/sites-available/000-default.conf
+# sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}/' /etc/apache2/sites-available/000-default.conf
 chown -R www-data:www-data /var/www/html
+sudo a2enmod rewrite
 systemctl enable apache2
 systemctl start apache2
