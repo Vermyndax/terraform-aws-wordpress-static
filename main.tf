@@ -229,7 +229,7 @@ resource "aws_security_group" "wordpress_instance_security_group" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["110.54.242.12/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
