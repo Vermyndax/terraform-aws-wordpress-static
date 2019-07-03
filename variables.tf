@@ -41,6 +41,23 @@ variable "wordpress_database_prefix" {
   default     = "wp_"
 }
 
+variable "blog_title" {
+  description = "Title of the blog site. Default: Blog Site"
+  default     = "Blog Site"
+}
+
+variable "admin_user" {
+  description = "Admin user for the Wordpress site. Required."
+}
+
+variable "admin_password" {
+  description = "Admin password for the Wordpress site. Required."
+}
+
+variable "admin_email" {
+  description = "Admin email for the Wordpress site. Required."
+}
+
 variable "deployment_name" {
   description = "Deployment name that will be used instead of name_prefix. If this is set (default: wordpress-static) then it will be prefixed on all resource names. We suggest you at least add the name of the project or customer here."
   default     = "wordpress-static"

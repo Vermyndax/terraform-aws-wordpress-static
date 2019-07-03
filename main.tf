@@ -338,8 +338,18 @@ resource "aws_elb" "wordpress_elb" {
 data "template_file" "launch_template_user_data" {
   template = "${file("${path.module}/files/launch-template-user-data.tpl")}"
   vars = {
-    efs_dns_name   = "${aws_efs_file_system.wordpress_efs_share.dns_name}"
-    site_edit_name = "${var.site_bucket_name}"
+    efs_dns_name      = "${aws_efs_file_system.wordpress_efs_share.dns_name}"
+    site_edit_name    = "${var.site_bucket_name}"
+    database_name     = "${var.wordpress_database_name}"
+    database_username = "${var.wordpress_database_username}"
+    database_password = "${var.wordpress_database_password}"
+    database_instance = "${aws_db_instance.wordpress_rds.id}"
+    database_prefix   = "${var.wordpress_database_prefix}"
+    site_hostname     = "${var.site_edit_name}.${var.site_tld}"
+    blog_title        = "${var.blog_title}"
+    admin_user        = "${var.admin_user}"
+    admin_password    = "${var.admin_password}"
+    admin_email       = "${var.admin_email}"
   }
 }
 
