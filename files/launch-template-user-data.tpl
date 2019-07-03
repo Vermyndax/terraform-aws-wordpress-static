@@ -38,9 +38,8 @@ echo "</IfModule>" >> /var/www/html/.htaccess
 echo "# END WordPress" >> /var/www/html/.htaccess
 sudo wp core config --allow-root --dbname='${database_name}' --dbuser='${database_username}' --dbpass='${database_password}' --dbhost='${database_instance}' --dbprefix='${database_prefix}'
 sudo wp core install --allow-root --url='https://${site_hostname}' --title='${blog_title}' --admin_user='${admin_user}' --admin_password='${admin_password}' --admin_email='${admin_email}'
-sed '/^anothervalue=.*/a after=me' test.txt
-TEXT="if (strpos($$_SERVER[\'HTTP_X_FORWARDED_PROTO\'], \'https\') !== false)\n\   $$_SERVER[\'HTTPS\']=\'on\';"
-sed "/^\$$table_prefix =.*/a $$TEXT" /var/www/html/wp-config.php
+TEXT="if (strpos($_SERVER[\'HTTP_X_FORWARDED_PROTO\'], \'https\') !== false)\n\   $_SERVER[\'HTTPS\']=\'on\';"
+sed -i "/^\$table_prefix =.*/a $TEXT" /var/www/html/wp-config.php
 sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}/' /etc/apache2/sites-available/000-default.conf
 chown -R www-data:www-data /var/www/html
 systemctl enable apache2
