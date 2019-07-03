@@ -48,3 +48,5 @@ chown -R www-data:www-data /var/www/html
 sudo a2enmod rewrite
 systemctl enable apache2
 systemctl start apache2
+### Plugin install
+sudo wp plugin install static-html-output-plugin --activate --allow-root
