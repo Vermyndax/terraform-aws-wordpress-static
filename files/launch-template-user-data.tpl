@@ -22,7 +22,7 @@ chmod +x wp-cli.phar
 sudo mv wp-cli.phar /usr/local/bin/wp
 cd /var/www/html
 sudo wp core download --allow-root
-echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
+# echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
 echo "# BEGIN WordPress" > /var/www/html/.htaccess
 echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
 echo "<IfModule mod_rewrite.c>" >> /var/www/html/.htaccess
