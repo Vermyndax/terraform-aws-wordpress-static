@@ -22,13 +22,10 @@ chmod +x wp-cli.phar
 sudo mv wp-cli.phar /usr/local/bin/wp
 cd /var/www/html
 sudo -u www-data wp core download
-# wget https://www.wordpress.org/latest.tar.gz
-# tar xzvf /tmp/latest.tar.gz --strip 1 -C /var/www/html
-# rm /tmp/latest.tar.gz
 echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
 echo "# BEGIN WordPress" > /var/www/html/.htaccess
 echo "<IfModule mod_rewrite.c>" >> /var/www/html/.htaccess
-echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
+# echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
 echo "RewriteEngine On" >> /var/www/html/.htaccess
 echo "RewriteBase /" >> /var/www/html/.htaccess
 echo "RewriteCond %%{HTTPS} off" >> /var/www/html/.htaccess
@@ -39,16 +36,12 @@ echo "RewriteCond %%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
 echo "RewriteRule . /index.php [L]" >> /var/www/html/.htaccess
 echo "</IfModule>" >> /var/www/html/.htaccess
 echo "# END WordPress" >> /var/www/html/.htaccess
-chown -R www-data:www-data /var/www/html
 sudo -u www-data wp core config --dbname='${database_name}' --dbuser='${database_username}' --dbpass='${database_password}' --dbhost='${database_instance}' --dbprefix='${database_prefix}'
 sudo -u www-data wp core install --url='https://${site_hostname}' --title='${blog_title}' --admin_user='${admin_user}' --admin_password='${admin_password}' --admin_email='${admin_email}'
-# sed -i 's/#ServerName www.example.com:80/ServerName ${site_edit_name}:80/' /etc/apache2/sites-available/000-default.conf
+sed '/^anothervalue=.*/a after=me' test.txt
+TEXT="if (strpos($$_SERVER[\'HTTP_X_FORWARDED_PROTO\'], \'https\') !== false)\n\   $$_SERVER[\'HTTPS\']=\'on\';"
+sed "/^\$$table_prefix =.*/a $$TEXT" /var/www/html/wp-config.php
 sed -i 's/ServerAdmin root@localhost/ServerAdmin admin@${site_edit_name}/' /etc/apache2/sites-available/000-default.conf
-#setsebool -P httpd_can_network_connect 1
-#setsebool -P httpd_can_network_connect_db 1
+chown -R www-data:www-data /var/www/html
 systemctl enable apache2
 systemctl start apache2
-#firewall-cmd --zone=public --permanent --add-service=http
-#firewall-cmd --reload
-#iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-#iptables -A OUTPUT -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
