@@ -390,7 +390,7 @@ resource "aws_launch_template" "wordpress_launch_template" {
 
   # user_data = base64encode(data.template_file.launch_template_user_data.rendered)
 
-  user_data = templatefile("${path.module}/files/launch-template-user-data.tpl", {
+  user_data = "${base64encode(templatefile("${path.module}/files/launch-template-user-data.tpl", {
     efs_dns_name      = aws_efs_file_system.wordpress_efs_share.dns_name,
     site_edit_name    = var.site_bucket_name,
     database_name     = var.wordpress_database_name,
@@ -403,7 +403,7 @@ resource "aws_launch_template" "wordpress_launch_template" {
     admin_user        = var.admin_user,
     admin_password    = var.admin_password,
     admin_email       = var.admin_email
-  })
+  }))}"
 }
 
 resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
