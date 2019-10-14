@@ -339,22 +339,22 @@ resource "aws_elb" "wordpress_elb" {
   }
 }
 
-data "template_file" "launch_template_user_data" {
-  content = templatefile("./files/launch-template-user-data.tpl", {
-    efs_dns_name      = aws_efs_file_system.wordpress_efs_share.dns_name,
-    site_edit_name    = var.site_bucket_name,
-    database_name     = var.wordpress_database_name,
-    database_username = var.wordpress_database_username,
-    database_password = var.wordpress_database_password,
-    database_instance = aws_db_instance.wordpress_rds.address,
-    database_prefix   = var.wordpress_database_prefix,
-    site_hostname     = var.site_edit_name.var.site_tld,
-    blog_title        = var.blog_title,
-    admin_user        = var.admin_user,
-    admin_password    = var.admin_password,
-    admin_email       = var.admin_email
-  })
-}
+# data "template_file" "launch_template_user_data" {
+#   content = templatefile("./files/launch-template-user-data.tpl", {
+#     efs_dns_name      = aws_efs_file_system.wordpress_efs_share.dns_name,
+#     site_edit_name    = var.site_bucket_name,
+#     database_name     = var.wordpress_database_name,
+#     database_username = var.wordpress_database_username,
+#     database_password = var.wordpress_database_password,
+#     database_instance = aws_db_instance.wordpress_rds.address,
+#     database_prefix   = var.wordpress_database_prefix,
+#     site_hostname     = var.site_edit_name.var.site_tld,
+#     blog_title        = var.blog_title,
+#     admin_user        = var.admin_user,
+#     admin_password    = var.admin_password,
+#     admin_email       = var.admin_email
+#   })
+# }
 
 resource "aws_launch_template" "wordpress_launch_template" {
   name_prefix   = local.name_prefix
@@ -390,7 +390,7 @@ resource "aws_launch_template" "wordpress_launch_template" {
 
   # user_data = base64encode(data.template_file.launch_template_user_data.rendered)
 
-  user_data = templatefile("./files/launch-template-user-data.tpl", {
+  user_data = templatefile("files/launch-template-user-data.tpl", {
     efs_dns_name      = aws_efs_file_system.wordpress_efs_share.dns_name,
     site_edit_name    = var.site_bucket_name,
     database_name     = var.wordpress_database_name,
