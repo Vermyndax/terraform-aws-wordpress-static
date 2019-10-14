@@ -365,7 +365,8 @@ resource "aws_launch_template" "wordpress_launch_template" {
     name = aws_iam_instance_profile.wordpress_server_iam_instance_profile.name
   }
 
-  key_name = aws_key_pair.wordpress_deployer_key.key_name
+  # key_name = aws_key_pair.wordpress_deployer_key.key_name
+  key_name = var.wordpress_key_pair_name
 
   lifecycle {
     create_before_destroy = true
