@@ -15,7 +15,7 @@
 # TODO: No source stage required here on this CodePipeline?
 
 locals {
-  name_prefix = "${var.name_prefix != "" ? var.name_prefix : var.deployment_name}"
+  name_prefix = var.name_prefix != "" ? var.name_prefix : var.deployment_name
 }
 
 data "aws_ami" "latest_ubuntu_1804" {
@@ -36,8 +36,8 @@ data "aws_ami" "latest_ubuntu_1804" {
 
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
-  bucket = "${var.site_bucket_name}"
-  region = "${var.site_region}"
+  bucket = var.site_bucket_name
+  region = var.site_region
 
   policy = <<EOF
 {
@@ -64,11 +64,11 @@ resource "aws_s3_bucket" "main_site" {
 }
 EOF
 
-  website {
-    index_document = "${var.root_page_object}"
-    error_document = "${var.error_page_object}"
-  }
 
+  website {
+    index_document = var.root_page_object
+    error_document = var.error_page_object
+  }
   # tags {
   # }
   # force_destroy = true
@@ -93,19 +93,19 @@ EOF
 # S3 bucket for website artifacts
 resource "aws_s3_bucket" "site_artifacts" {
   bucket = "${var.site_bucket_name}-code-artifacts"
-  region = "${var.site_region}"
-  acl = "private"
+  region = var.site_region
+  acl    = "private"
 
   tags = {
-    Website-artifacts = "${var.site_bucket_name}"
+    Website-artifacts = var.site_bucket_name
   }
 }
 
 # S3 bucket for CloudFront logging
 resource "aws_s3_bucket" "site_cloudfront_logs" {
   bucket = "${var.site_bucket_name}-cloudfront-logs"
-  region = "${var.site_region}"
-  acl = "private"
+  region = var.site_region
+  acl    = "private"
 }
 
 # Should give a parameter to create
@@ -113,7 +113,7 @@ resource "aws_s3_bucket" "site_cloudfront_logs" {
 
 # IAM roles for CodeCommit/CodeDeploy
 resource "aws_iam_role" "codepipeline_iam_role" {
-  name_prefix = "${local.name_prefix}"
+  name_prefix = local.name_prefix
 
   assume_role_policy = <<EOF
 {
@@ -129,11 +129,12 @@ resource "aws_iam_role" "codepipeline_iam_role" {
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_role_policy" "codepipeline_policy" {
-  name_prefix = "${local.name_prefix}"
-  role        = "${aws_iam_role.codepipeline_iam_role.id}"
+  name_prefix = local.name_prefix
+  role        = aws_iam_role.codepipeline_iam_role.id
 
   policy = <<EOF
 {
@@ -163,17 +164,18 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       "Action": [
         "sns:Publish"
       ],
-      "Resource": "${aws_sns_topic.sns_topic.arn}",
+      "Resource": "${aws_sns_topic.sns_topic[0].arn}",
       "Effect": "Allow"
     }
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_role" "wordpress_server_iam_role" {
-  name_prefix = "${local.name_prefix}"
-  path = "/"
+  name_prefix = local.name_prefix
+  path        = "/"
 
   assume_role_policy = <<EOF
 {
@@ -190,11 +192,12 @@ resource "aws_iam_role" "wordpress_server_iam_role" {
     ]
 }
 EOF
+
 }
 
 resource "aws_iam_instance_profile" "wordpress_server_iam_instance_profile" {
-  name_prefix = "${local.name_prefix}"
-  role        = "${aws_iam_role.wordpress_server_iam_role.name}"
+  name_prefix = local.name_prefix
+  role        = aws_iam_role.wordpress_server_iam_role.name
 }
 
 # resource "aws_instance" "wordpress_server" {
@@ -202,8 +205,8 @@ resource "aws_iam_instance_profile" "wordpress_server_iam_instance_profile" {
 # }
 
 resource "aws_security_group" "wordpress_instance_security_group" {
-  name_prefix = "${local.name_prefix}"
-  vpc_id      = "${var.vpc_id}"
+  name_prefix = local.name_prefix
+  vpc_id      = var.vpc_id
 
   egress {
     from_port   = 0
@@ -215,14 +218,15 @@ resource "aws_security_group" "wordpress_instance_security_group" {
     from_port = 80
     to_port   = 80
     protocol  = "tcp"
+
     # cidr_blocks = ["0.0.0.0/0"]
-    security_groups = ["${aws_security_group.wordpress_elb_security_group.id}"]
+    security_groups = [aws_security_group.wordpress_elb_security_group.id]
   }
   ingress {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = ["${aws_security_group.wordpress_elb_security_group.id}"]
+    security_groups = [aws_security_group.wordpress_elb_security_group.id]
   }
 
   ingress {
@@ -234,8 +238,8 @@ resource "aws_security_group" "wordpress_instance_security_group" {
 }
 
 resource "aws_security_group" "wordpress_efs_mount_security_group" {
-  name_prefix = "${local.name_prefix}"
-  vpc_id      = "${var.vpc_id}"
+  name_prefix = local.name_prefix
+  vpc_id      = var.vpc_id
 
   egress {
     from_port   = 0
@@ -247,13 +251,13 @@ resource "aws_security_group" "wordpress_efs_mount_security_group" {
     from_port       = 2049
     to_port         = 2049
     protocol        = "tcp"
-    security_groups = ["${aws_security_group.wordpress_instance_security_group.id}"]
+    security_groups = [aws_security_group.wordpress_instance_security_group.id]
   }
 }
 
 resource "aws_security_group" "wordpress_elb_security_group" {
-  name_prefix = "${local.name_prefix}"
-  vpc_id      = "${var.vpc_id}"
+  name_prefix = local.name_prefix
+  vpc_id      = var.vpc_id
 
   egress {
     from_port   = 0
@@ -282,31 +286,31 @@ resource "aws_efs_file_system" "wordpress_efs_share" {
 }
 
 data "aws_subnet_ids" "vpc_public_subnets" {
-  vpc_id = "${var.vpc_id}"
+  vpc_id = var.vpc_id
 
   filter {
     name   = "tag:${var.efs_subnet_tag_name}"
-    values = ["${var.efs_subnet_tag_value}"]
+    values = [var.efs_subnet_tag_value]
   }
 }
 
 resource "aws_efs_mount_target" "wordpress_mount_target" {
   # This should be more dynamic to pick up public subnets, figure out a clever way to do that
-  count           = "${length(data.aws_subnet_ids.vpc_public_subnets.ids)}"
-  subnet_id       = "${element(data.aws_subnet_ids.vpc_public_subnets.ids, count.index)}"
-  file_system_id  = "${aws_efs_file_system.wordpress_efs_share.id}"
-  security_groups = ["${aws_security_group.wordpress_efs_mount_security_group.id}"]
+  count           = length(data.aws_subnet_ids.vpc_public_subnets.ids)
+  subnet_id       = element(tolist(data.aws_subnet_ids.vpc_public_subnets.ids), count.index)
+  file_system_id  = aws_efs_file_system.wordpress_efs_share.id
+  security_groups = [aws_security_group.wordpress_efs_mount_security_group.id]
 }
 
 resource "aws_key_pair" "wordpress_deployer_key" {
-  key_name_prefix = "${local.name_prefix}"
-  public_key      = "${var.deployer_public_key}"
+  key_name_prefix = local.name_prefix
+  public_key      = var.deployer_public_key
 }
 
 resource "aws_elb" "wordpress_elb" {
-  name_prefix                 = "${local.name_prefix}"
-  security_groups             = ["${aws_security_group.wordpress_elb_security_group.id}"]
-  subnets                     = ["${var.elb_subnets}"]
+  name_prefix                 = local.name_prefix
+  security_groups             = [aws_security_group.wordpress_elb_security_group.id]
+  subnets                     = var.elb_subnets
   cross_zone_load_balancing   = true
   idle_timeout                = 400
   connection_draining         = true
@@ -323,7 +327,7 @@ resource "aws_elb" "wordpress_elb" {
     lb_protocol        = "https"
     instance_port      = "80"
     instance_protocol  = "http"
-    ssl_certificate_id = "${var.acm_site_certificate_arn}"
+    ssl_certificate_id = var.acm_site_certificate_arn
   }
 
   # TODO: Remove this listener when debugging is finished
@@ -336,33 +340,32 @@ resource "aws_elb" "wordpress_elb" {
 }
 
 data "template_file" "launch_template_user_data" {
-  template = "${file("${path.module}/files/launch-template-user-data.tpl")}"
-  vars = {
-    efs_dns_name      = "${aws_efs_file_system.wordpress_efs_share.dns_name}"
-    site_edit_name    = "${var.site_bucket_name}"
-    database_name     = "${var.wordpress_database_name}"
-    database_username = "${var.wordpress_database_username}"
-    database_password = "${var.wordpress_database_password}"
-    database_instance = "${aws_db_instance.wordpress_rds.address}"
-    database_prefix   = "${var.wordpress_database_prefix}"
-    site_hostname     = "${var.site_edit_name}.${var.site_tld}"
-    blog_title        = "${var.blog_title}"
-    admin_user        = "${var.admin_user}"
-    admin_password    = "${var.admin_password}"
-    admin_email       = "${var.admin_email}"
-  }
+  content = templatefile("./files/launch-template-user-data.tpl", {
+    efs_dns_name      = aws_efs_file_system.wordpress_efs_share.dns_name,
+    site_edit_name    = var.site_bucket_name,
+    database_name     = var.wordpress_database_name,
+    database_username = var.wordpress_database_username,
+    database_password = var.wordpress_database_password,
+    database_instance = aws_db_instance.wordpress_rds.address,
+    database_prefix   = var.wordpress_database_prefix,
+    site_hostname     = var.site_edit_name.var.site_tld,
+    blog_title        = var.blog_title,
+    admin_user        = var.admin_user,
+    admin_password    = var.admin_password,
+    admin_email       = var.admin_email
+  })
 }
 
 resource "aws_launch_template" "wordpress_launch_template" {
-  name_prefix   = "${local.name_prefix}"
-  image_id      = "${data.aws_ami.latest_ubuntu_1804.id}"
-  instance_type = "${var.wordpress_instance_type}"
+  name_prefix   = local.name_prefix
+  image_id      = data.aws_ami.latest_ubuntu_1804.id
+  instance_type = var.wordpress_instance_type
 
   iam_instance_profile {
-    name = "${aws_iam_instance_profile.wordpress_server_iam_instance_profile.name}"
+    name = aws_iam_instance_profile.wordpress_server_iam_instance_profile.name
   }
 
-  key_name = "${aws_key_pair.wordpress_deployer_key.key_name}"
+  key_name = aws_key_pair.wordpress_deployer_key.key_name
 
   lifecycle {
     create_before_destroy = true
@@ -373,8 +376,8 @@ resource "aws_launch_template" "wordpress_launch_template" {
   network_interfaces {
     delete_on_termination       = true
     associate_public_ip_address = true
-    security_groups             = ["${aws_security_group.wordpress_instance_security_group.id}"]
-    subnet_id                   = "${var.subnet_id}"
+    security_groups             = [aws_security_group.wordpress_instance_security_group.id]
+    subnet_id                   = var.subnet_id
   }
 
   tag_specifications {
@@ -385,25 +388,25 @@ resource "aws_launch_template" "wordpress_launch_template" {
     }
   }
 
-  user_data = "${base64encode(data.template_file.launch_template_user_data.rendered)}"
+  user_data = base64encode(data.template_file.launch_template_user_data.rendered)
 }
 
 resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
-  name_prefix = "${local.name_prefix}"
+  name_prefix = local.name_prefix
   min_size    = "1"
   max_size    = "1"
 
-  launch_template = {
-    id      = "${join("", aws_launch_template.wordpress_launch_template.*.id)}"
-    version = "${aws_launch_template.wordpress_launch_template.latest_version}"
+  launch_template {
+    id      = join("", aws_launch_template.wordpress_launch_template.*.id)
+    version = aws_launch_template.wordpress_launch_template.latest_version
   }
 
   lifecycle {
     create_before_destroy = true
   }
 
-  load_balancers      = ["${aws_elb.wordpress_elb.name}"]
-  vpc_zone_identifier = ["${var.elb_subnets}"]
+  load_balancers      = [aws_elb.wordpress_elb.name]
+  vpc_zone_identifier = var.elb_subnets
 }
 
 # resource "aws_kms_key" "codepipeline_kms_key" {
@@ -421,7 +424,7 @@ resource "aws_autoscaling_group" "wordpress_autoscaling_group" {
 
 # CodeBuild IAM Permissions
 resource "aws_iam_role" "codebuild_assume_role" {
-  name_prefix = "${local.name_prefix}"
+  name_prefix = local.name_prefix
 
   assume_role_policy = <<EOF
 {
@@ -437,11 +440,12 @@ resource "aws_iam_role" "codebuild_assume_role" {
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_role_policy" "codebuild_policy" {
-  name_prefix = "${local.name_prefix}"
-  role = "${aws_iam_role.codebuild_assume_role.id}"
+  name_prefix = local.name_prefix
+  role        = aws_iam_role.codebuild_assume_role.id
 
   policy = <<POLICY
 {
@@ -493,7 +497,7 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       "Action": [
         "sns:Publish"
       ],
-      "Resource": "${aws_sns_topic.sns_topic.arn}",
+      "Resource": "${aws_sns_topic.sns_topic[0].arn}",
       "Effect": "Allow"
     },
     {
@@ -506,13 +510,15 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   ]
 }
 POLICY
+
 }
 
 resource "aws_codebuild_project" "build_project" {
   name          = "${local.name_prefix}-build-project"
   description   = "The CodeBuild build project"
-  service_role  = "${aws_iam_role.codebuild_assume_role.arn}"
-  build_timeout = "${var.build_timeout}"
+  service_role  = aws_iam_role.codebuild_assume_role.arn
+  build_timeout = var.build_timeout
+
   # encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
 
   artifacts {
@@ -520,10 +526,10 @@ resource "aws_codebuild_project" "build_project" {
   }
 
   environment {
-    compute_type    = "${var.build_compute_type}"
-    image           = "${var.build_image}"
+    compute_type    = var.build_compute_type
+    image           = var.build_image
     type            = "LINUX_CONTAINER"
-    privileged_mode = "${var.build_privileged_override}"
+    privileged_mode = var.build_privileged_override
   }
 
   source {
@@ -535,8 +541,9 @@ resource "aws_codebuild_project" "build_project" {
 resource "aws_codebuild_project" "test_project" {
   name          = "${local.name_prefix}-test-project"
   description   = "The CodeBuild test project"
-  service_role  = "${aws_iam_role.codebuild_assume_role.arn}"
-  build_timeout = "${var.build_timeout}"
+  service_role  = aws_iam_role.codebuild_assume_role.arn
+  build_timeout = var.build_timeout
+
   # encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
 
   artifacts {
@@ -544,10 +551,10 @@ resource "aws_codebuild_project" "test_project" {
   }
 
   environment {
-    compute_type    = "${var.test_compute_type}"
-    image           = "${var.test_image}"
+    compute_type    = var.test_compute_type
+    image           = var.test_image
     type            = "LINUX_CONTAINER"
-    privileged_mode = "${var.build_privileged_override}"
+    privileged_mode = var.build_privileged_override
   }
 
   source {
@@ -560,12 +567,11 @@ resource "aws_codebuild_project" "test_project" {
 # Stages are configured in the CodePipeline object below. Add stages and referring CodeBuild projects above as necessary. Note that by default, the test stage is commented out, today.
 resource "aws_codepipeline" "site_codepipeline" {
   name     = "${local.name_prefix}-codepipeline"
-  role_arn = "${aws_iam_role.codepipeline_iam_role.arn}"
+  role_arn = aws_iam_role.codepipeline_iam_role.arn
 
   artifact_store {
-    location = "${aws_s3_bucket.site_artifacts.bucket}"
+    location = aws_s3_bucket.site_artifacts.bucket
     type     = "S3"
-
     # encryption_key {
     #   id = "${aws_kms_alias.codepipeline_kms_key_name.arn}"
     #   type = "KMS"
@@ -583,7 +589,7 @@ resource "aws_codepipeline" "site_codepipeline" {
       version          = "1"
       output_artifacts = ["${local.name_prefix}-artifacts"]
 
-      configuration {
+      configuration = {
         RepositoryName = "test"
         BranchName     = "master"
       }
@@ -602,8 +608,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       output_artifacts = ["${local.name_prefix}-tested"]
       version          = "1"
 
-      configuration {
-        ProjectName = "${aws_codebuild_project.test_project.name}"
+      configuration = {
+        ProjectName = aws_codebuild_project.test_project.name
       }
     }
   }
@@ -620,16 +626,16 @@ resource "aws_codepipeline" "site_codepipeline" {
       output_artifacts = ["${local.name_prefix}-build"]
       version          = "1"
 
-      configuration {
-        ProjectName = "${aws_codebuild_project.build_project.name}"
+      configuration = {
+        ProjectName = aws_codebuild_project.build_project.name
       }
     }
   }
 }
 
 resource "aws_security_group" "wordpress_database_security_group" {
-    name_prefix = "${local.name_prefix}"
-  vpc_id        = "${var.vpc_id}"
+  name_prefix = local.name_prefix
+  vpc_id      = var.vpc_id
 
   egress {
     from_port   = 0
@@ -641,33 +647,34 @@ resource "aws_security_group" "wordpress_database_security_group" {
     from_port = 3306
     to_port   = 3306
     protocol  = "tcp"
+
     # cidr_blocks = ["0.0.0.0/0"]
-    security_groups = ["${aws_security_group.wordpress_instance_security_group.id}"]
+    security_groups = [aws_security_group.wordpress_instance_security_group.id]
   }
 }
 
 resource "aws_db_instance" "wordpress_rds" {
-    identifier             = "${local.name_prefix}"
-    engine                 = "mysql"
-    engine_version         = "5.7"
-    allocated_storage      = "${var.wordpress_database_storage}"
-    instance_class         = "${var.wordpress_database_instance_type}"
-    vpc_security_group_ids = ["${aws_security_group.wordpress_database_security_group.id}"]
-    name                   = "${var.wordpress_database_name}"
-    username               = "${var.wordpress_database_username}"
-    password               = "${var.wordpress_database_password}"
-    db_subnet_group_name   = "${var.wordpress_database_subnet_group_name}"
-    parameter_group_name   = "default.mysql5.7"
-    skip_final_snapshot    = true
-    tags {
-        Name = "WordPress DB for ${local.name_prefix}"
-    }
+  identifier             = local.name_prefix
+  engine                 = "mysql"
+  engine_version         = "5.7"
+  allocated_storage      = var.wordpress_database_storage
+  instance_class         = var.wordpress_database_instance_type
+  vpc_security_group_ids = [aws_security_group.wordpress_database_security_group.id]
+  name                   = var.wordpress_database_name
+  username               = var.wordpress_database_username
+  password               = var.wordpress_database_password
+  db_subnet_group_name   = var.wordpress_database_subnet_group_name
+  parameter_group_name   = "default.mysql5.7"
+  skip_final_snapshot    = true
+  tags = {
+    Name = "WordPress DB for ${local.name_prefix}"
+  }
 }
 
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
-    domain_name = "${aws_s3_bucket.main_site.website_endpoint}"
+    domain_name = aws_s3_bucket.main_site.website_endpoint
     origin_id   = "origin-bucket-${var.site_bucket_name}"
 
     custom_origin_config {
@@ -679,20 +686,20 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
     custom_header {
       name  = "User-Agent"
-      value = "${var.site_secret}"
+      value = var.site_secret
     }
   }
 
-  logging_config = {
-    include_cookies = "${var.log_include_cookies}"
-    bucket          = "${aws_s3_bucket.site_cloudfront_logs.bucket_domain_name}"
+  logging_config {
+    include_cookies = var.log_include_cookies
+    bucket          = aws_s3_bucket.site_cloudfront_logs.bucket_domain_name
     prefix          = "${var.site_bucket_name}-"
   }
 
   enabled             = true
-  default_root_object = "${var.root_page_object}"
-  aliases             = ["${var.site_bucket_name}"]
-  price_class         = "${var.cloudfront_price_class}"
+  default_root_object = var.root_page_object
+  aliases             = [var.site_bucket_name]
+  price_class         = var.cloudfront_price_class
   retain_on_delete    = false
 
   default_cache_behavior {
@@ -716,7 +723,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = "${var.acm_site_certificate_arn}"
+    acm_certificate_arn      = var.acm_site_certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.1_2016"
   }
@@ -730,15 +737,14 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
 # SNS to support notifications for commit and build events
 resource "aws_sns_topic" "sns_topic" {
-  count       = "${var.create_sns_topic == "true" ? 1 : 0}"
-  name_prefix = "${local.name_prefix}"
-
+  count       = var.create_sns_topic == "true" ? 1 : 0
+  name_prefix = local.name_prefix
   # kms_master_key_id = "alias/codepipeline-${var.site_bucket_name}"
 }
 
 # SNS notifications for pipeline
 resource "aws_cloudwatch_event_rule" "pipeline_events" {
-  name_prefix = "${local.name_prefix}"
+  name_prefix = local.name_prefix
   description = "Alert on ${aws_codepipeline.site_codepipeline.name} events"
 
   event_pattern = <<PATTERN
@@ -756,38 +762,39 @@ resource "aws_cloudwatch_event_rule" "pipeline_events" {
   }
 }
 PATTERN
+
 }
 
 resource "aws_cloudwatch_event_target" "sns" {
-  rule = "${aws_cloudwatch_event_rule.pipeline_events.name}"
+  rule      = aws_cloudwatch_event_rule.pipeline_events.name
   target_id = "SendToSNS"
-  arn = "${aws_sns_topic.sns_topic.arn}"
+  arn       = aws_sns_topic.sns_topic[0].arn
 }
 
 resource "aws_sns_topic_policy" "default_sns_policy" {
-  arn = "${aws_sns_topic.sns_topic.arn}"
-  policy = "${data.aws_iam_policy_document.sns_topic_policy.json}"
+  arn    = aws_sns_topic.sns_topic[0].arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json
 }
 
 data "aws_iam_policy_document" "sns_topic_policy" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["SNS:Publish"]
 
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["events.amazonaws.com"]
     }
 
-    resources = ["${aws_sns_topic.sns_topic.arn}"]
+    resources = [aws_sns_topic.sns_topic[0].arn]
   }
 }
 
 # DNS entry pointing to public site - optional
 
 resource "aws_route53_zone" "primary_site_tld" {
-  count = "${var.create_public_dns_zone == "true" ? 1 : 0}"
-  name = "${var.site_tld}"
+  count = var.create_public_dns_zone == "true" ? 1 : 0
+  name  = var.site_tld
 }
 
 data "aws_route53_zone" "site_tld_selected" {
@@ -795,27 +802,27 @@ data "aws_route53_zone" "site_tld_selected" {
 }
 
 resource "aws_route53_record" "site_tld_record" {
-  count = "${var.create_public_dns_site_record == "true" ? 1 : 0}"
-  zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
-  name = "${var.site_bucket_name}."
-  type = "A"
+  count   = var.create_public_dns_site_record == "true" ? 1 : 0
+  zone_id = data.aws_route53_zone.site_tld_selected.zone_id
+  name    = "${var.site_bucket_name}."
+  type    = "A"
 
   alias {
-    name = "${aws_cloudfront_distribution.site_cloudfront_distribution.domain_name}"
-    zone_id = "${aws_cloudfront_distribution.site_cloudfront_distribution.hosted_zone_id}"
+    name                   = aws_cloudfront_distribution.site_cloudfront_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.site_cloudfront_distribution.hosted_zone_id
     evaluate_target_health = false
   }
 }
 
 resource "aws_route53_record" "site_wordpress_record" {
-  count = "${var.create_public_wordpress_record == "true" ? 1 : 0}"
-  zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
-  name = "${var.site_edit_name}."
-  type = "A"
+  count   = var.create_public_wordpress_record == "true" ? 1 : 0
+  zone_id = data.aws_route53_zone.site_tld_selected.zone_id
+  name    = "${var.site_edit_name}."
+  type    = "A"
 
   alias {
-    name = "${aws_elb.wordpress_elb.dns_name}"
-    zone_id = "${aws_elb.wordpress_elb.zone_id}"
+    name                   = aws_elb.wordpress_elb.dns_name
+    zone_id                = aws_elb.wordpress_elb.zone_id
     evaluate_target_health = false
   }
 }
@@ -826,6 +833,5 @@ resource "aws_route53_record" "site_wordpress_record" {
 #   name    = "www"
 #   type    = "CNAME"
 #   ttl     = "5"
-
 #   records = ["${var.site_bucket_name}"]
 # }

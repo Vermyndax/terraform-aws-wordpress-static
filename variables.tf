@@ -36,6 +36,7 @@ variable "wordpress_database_instance_type" {
   description = "RDS instance type. Default: db.t2.micro"
   default     = "db.t2.micro"
 }
+
 variable "wordpress_database_prefix" {
   description = "Prefix for the Wordpress database tables. Default: wp_"
   default     = "wp_"
@@ -110,6 +111,7 @@ variable "log_include_cookies" {
   description = "Defines whether or not CloudFront should log cookies. Default: false."
   default     = "false"
 }
+
 variable "create_sns_topic" {
   description = "Defines whether or not to create an SNS topic for notifications about events. Default: true."
   default     = "true"
@@ -117,7 +119,7 @@ variable "create_sns_topic" {
 
 variable "elb_subnets" {
   description = "List of subnet IDs to attach to the ELB. Required."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "sns_topic_name" {
@@ -238,4 +240,5 @@ variable "add_manual_trigger" {
   description = "Boolean to determine whether or not to add code to support running the static refresh manually. Default: true."
   default     = "true"
 }
+
 # TODO: Support names for the rest of the resources?
