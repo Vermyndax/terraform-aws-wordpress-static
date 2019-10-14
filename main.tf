@@ -265,9 +265,17 @@ resource "aws_security_group" "wordpress_elb_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
   ingress {
     from_port   = 443
     to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -322,12 +330,20 @@ resource "aws_elb" "wordpress_elb" {
     interval            = 30
     target              = "HTTP:80/"
   }
+  
   listener {
     lb_port            = 443
     lb_protocol        = "https"
     instance_port      = "80"
     instance_protocol  = "http"
     ssl_certificate_id = var.acm_site_certificate_arn
+  }
+
+  listener {
+    lb_port            = 80
+    lb_protocol        = "http"
+    instance_port      = "80"
+    instance_protocol  = "http"
   }
 
   # TODO: Remove this listener when debugging is finished
