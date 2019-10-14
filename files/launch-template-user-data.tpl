@@ -23,18 +23,19 @@ sudo mv wp-cli.phar /usr/local/bin/wp
 cd /var/www/html
 sudo wp core download --allow-root
 # echo "<h1>Healthcheck File</h1>" > /var/www/html/index.html
-echo "# BEGIN WordPress" > /var/www/html/.htaccess
-echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
-echo "<IfModule mod_rewrite.c>" >> /var/www/html/.htaccess
-echo "RewriteEngine On" >> /var/www/html/.htaccess
-echo "RewriteBase /" >> /var/www/html/.htaccess
-echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
-echo "RewriteCond %%{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
-echo "RewriteCond %%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
-echo "RewriteRule . /index.php [L]" >> /var/www/html/.htaccess
-echo "</IfModule>" >> /var/www/html/.htaccess
-echo "# END WordPress" >> /var/www/html/.htaccess
+# echo "# BEGIN WordPress" > /var/www/html/.htaccess
+# echo "DirectoryIndex index.php index.html /index.php" >> /var/www/html/.htaccess
+# echo "<IfModule mod_rewrite.c>" >> /var/www/html/.htaccess
+# echo "RewriteEngine On" >> /var/www/html/.htaccess
+# echo "RewriteBase /" >> /var/www/html/.htaccess
+# echo "RewriteRule ^index\.php$ - [L]" >> /var/www/html/.htaccess
+# echo "RewriteCond %%{REQUEST_FILENAME} !-f" >> /var/www/html/.htaccess
+# echo "RewriteCond %%{REQUEST_FILENAME} !-d" >> /var/www/html/.htaccess
+# echo "RewriteRule . /index.php [L]" >> /var/www/html/.htaccess
+# echo "</IfModule>" >> /var/www/html/.htaccess
+# echo "# END WordPress" >> /var/www/html/.htaccess
 echo "<Directory /var/www/html/>" >> /etc/apache2/apache2.conf
+echo "        DirectoryIndex index.php" >> /etc/apache2/apache2.conf
 echo "        Options Indexes FollowSymLinks" >> /etc/apache2/apache2.conf
 echo "        AllowOverride all" >> /etc/apache2/apache2.conf
 echo "        Require all granted" >> /etc/apache2/apache2.conf
