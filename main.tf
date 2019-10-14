@@ -398,7 +398,7 @@ resource "aws_launch_template" "wordpress_launch_template" {
     database_password = var.wordpress_database_password,
     database_instance = aws_db_instance.wordpress_rds.address,
     database_prefix   = var.wordpress_database_prefix,
-    site_hostname     = var.site_edit_name.var.site_tld,
+    site_hostname     = "${var.site_edit_name}.${var.site_tld}",
     blog_title        = var.blog_title,
     admin_user        = var.admin_user,
     admin_password    = var.admin_password,
