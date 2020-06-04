@@ -36,8 +36,9 @@ data "aws_ami" "latest_ubuntu_1804" {
 
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
-  bucket = var.site_bucket_name
-  region = var.site_region
+  bucket        = var.site_bucket_name
+  region        = var.site_region
+  force_destroy = true
 
   policy = <<EOF
 {
@@ -80,6 +81,7 @@ EOF
 #   bucket = "www.${var.site_bucket_name}"
 #   region = "${var.site_region}"
 #   acl = "private"
+#   force_destroy = true
 
 #   website {
 #     redirect_all_requests_to = "${var.site_bucket_name}"
@@ -92,9 +94,10 @@ EOF
 
 # S3 bucket for website artifacts
 resource "aws_s3_bucket" "site_artifacts" {
-  bucket = "${var.site_bucket_name}-code-artifacts"
-  region = var.site_region
-  acl    = "private"
+  bucket        = "${var.site_bucket_name}-code-artifacts"
+  region        = var.site_region
+  acl           = "private"
+  force_destroy = true
 
   tags = {
     Website-artifacts = var.site_bucket_name
@@ -103,9 +106,10 @@ resource "aws_s3_bucket" "site_artifacts" {
 
 # S3 bucket for CloudFront logging
 resource "aws_s3_bucket" "site_cloudfront_logs" {
-  bucket = "${var.site_bucket_name}-cloudfront-logs"
-  region = var.site_region
-  acl    = "private"
+  bucket        = "${var.site_bucket_name}-cloudfront-logs"
+  region        = var.site_region
+  acl           = "private"
+  force_destroy = true
 }
 
 # Should give a parameter to create
@@ -265,7 +269,7 @@ resource "aws_security_group" "wordpress_elb_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   ingress {
     from_port   = 443
     to_port     = 443
@@ -330,7 +334,7 @@ resource "aws_elb" "wordpress_elb" {
     interval            = 30
     target              = "HTTP:80/"
   }
-  
+
   listener {
     lb_port            = 443
     lb_protocol        = "https"
@@ -340,10 +344,10 @@ resource "aws_elb" "wordpress_elb" {
   }
 
   listener {
-    lb_port            = 80
-    lb_protocol        = "http"
-    instance_port      = "80"
-    instance_protocol  = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+    instance_port     = "80"
+    instance_protocol = "http"
   }
 
   # TODO: Remove this listener when debugging is finished
